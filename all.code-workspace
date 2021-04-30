@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../old_blackJack"
+		},
+		{
+			"path": "../grpc/transfer-df"
+		},
+		{
+			"path": "../grpc/hello"
+		}
+	],
+	"settings": {}
+}

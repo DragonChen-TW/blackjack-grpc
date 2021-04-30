@@ -24,4 +24,5 @@ def create_all_cards():
     return cards
 
 if __name__ == '__main__':
-    create_all_cards()
+    cards = create_all_cards()
+    print(cards)

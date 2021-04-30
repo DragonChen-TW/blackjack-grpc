@@ -7,17 +7,31 @@ service BlackJackService {
 
     // In Game
     rpc SendAction(Action) returns (Card);
+    rpc CalPoint(pIdx) returns (Points);
 }
 
-message Empty { }
+// message Empty { }
 message Action {
     enum ActionNum {
         STAND = 0;
         DRAW = 1;
     }
     ActionNum action_num = 1;
+    int32 p_idx = 2;
 }
 message Card {
     string flow = 1;
     int32 point = 2;
+}
+
+message pIdx {
+    int32 p_idx = 1;
+}
+message Points {
+    enum StatusNum {
+        OKAY = 0;
+        BOOM = 1;
+    }
+    StatusNum status_num = 1;
+    int32 points = 2;
 }
