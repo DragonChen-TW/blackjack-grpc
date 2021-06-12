@@ -24,6 +24,11 @@ class BlackJackService(blackjack_pb2_grpc.BlackJackService):
             card = self.game.draw_one_card(p_idx)
         else:
             card = Card('N', 0)
+        
+        # calculate
+        print('p {} get {} points'.format(
+            p_idx, self.game.cal_point(p_idx)
+        ))
 
         return blackjack_pb2.Card(flow=card.flow, point=card.point)
     
@@ -31,7 +36,11 @@ class BlackJackService(blackjack_pb2_grpc.BlackJackService):
         p_idx = request.p_idx
 
         points = self.game.cal_point(p_idx)
-        return blackjack_pb2.Points(points=points, status_num=Status.OKAY)
+        if points <= 21:
+            status = Status.OKAY
+        else:
+            status = Status.BOOM
+        return blackjack_pb2.Points(points=points, status_num=status)
 
 def serve():
     # using ThreadPool to build server
