@@ -12,35 +12,36 @@ from const import Action, Status
 class BlackJackService(blackjack_pb2_grpc.BlackJackService):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.game = Game(1)
+        self.game = Game(n_players=2)
     
     def SendAction(self, request, context):
         print('send action')
         p_idx = request.p_idx
 
-        # hello_grpc_pb2.HelloReply(msg=f'Hello, {request.name}')
         # sample one card out
         if request.action_num == Action.DRAW:
             card = self.game.draw_one_card(p_idx)
         else:
+            print(f'Player {p_idx} draw')
             card = Card('N', 0)
-        
-        # calculate
-        print('p {} get {} points'.format(
-            p_idx, self.game.cal_point(p_idx)
-        ))
+            self.game.next_player()
 
         return blackjack_pb2.Card(flow=card.flow, point=card.point)
     
-    def CalPoint(self, request, context):
+    def CheckStatus(self, request, context):
         p_idx = request.p_idx
 
         points = self.game.cal_point(p_idx)
-        if points <= 21:
-            status = Status.OKAY
+        if self.game.now_player >= self.game.n_players:
+            status = Status.END
+        elif p_idx != self.game.now_player:
+            status = Status.WAIT
         else:
-            status = Status.BOOM
-        return blackjack_pb2.Points(points=points, status_num=status)
+            if points <= 21:
+                status = Status.OKAY
+            else:
+                status = Status.BOOM
+        return blackjack_pb2.Status(points=points, status_num=status)
 
 def serve():
     # using ThreadPool to build server

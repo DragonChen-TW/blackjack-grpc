@@ -3,11 +3,9 @@ syntax = "proto3";
 // python3 -m grpc_tools.protoc -I ../protobuf --python_out=. --grpc_python_out=. blackjack.proto
 
 service BlackJackService {
-    // Game Start
-
     // In Game
     rpc SendAction(Action) returns (Card);
-    rpc CalPoint(pIdx) returns (Points);
+    rpc CheckStatus(pIdx) returns (Status);
 }
 
 // message Empty { }
@@ -27,10 +25,12 @@ message Card {
 message pIdx {
     int32 p_idx = 1;
 }
-message Points {
+message Status {
     enum StatusNum {
-        OKAY = 0;
-        BOOM = 1;
+        WAIT = 0;
+        OKAY = 1;
+        BOOM = 2;
+        END = 3;
     }
     StatusNum status_num = 1;
     int32 points = 2;

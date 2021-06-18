@@ -31,58 +31,75 @@ def test():
         response = stub.SendAction(req)
         print('f', Card.from_grpc(response))
 
-        total = stub.CalPoint(
+        total = stub.CheckStatus(
             blackjack_pb2.pIdx(p_idx=0)
         )
         print('success')
         points, status = total.points, total.status_num
-        print('-' * 10, points, status, '-' * 10)
+        print('=' * 10, points, status, '=' * 10)
 
 
 def cal_points(stub, p_idx):
-    cal = stub.CalPoint(blackjack_pb2.pIdx(p_idx=p_idx))
-    return cal.points
+    res = stub.CheckStatus(blackjack_pb2.pIdx(p_idx=p_idx))
+    return res.points
 
-def run():
+def get_status(stub, p_idx):
+    res = stub.CheckStatus(blackjack_pb2.pIdx(p_idx=p_idx))
+    # print('s', res.status_num)
+    return res.status_num
+
+def run(p_idx=None):
     with grpc.insecure_channel('127.0.0.1:30051') as channel:
         stub = blackjack_pb2_grpc.BlackJackServiceStub(channel)
 
         print('Welcome to blackjack-grpc 2020 version')
         print('I am the creator DragonChen')
-        print('Please input action character:')
+        print('You can input these action characters to play:')
         print('\t[d]: draw\t[s]: stand')
-        print('-' * 20)
+        print('=' * 20)
 
-        # p_idx = int(input('Please pick up player num: '))
-        p_idx = 0
+        if p_idx == None:
+            p_idx = int(input('Please pick up player num: '))
+        print(f'You are player {p_idx}')
 
+        if get_status(stub, p_idx) == Status.WAIT:
+            print('It is not your turn now.')
+        while get_status(stub, p_idx) == Status.WAIT:
+            time.sleep(1)
+
+        # Your turn
         while cal_points(stub, p_idx) <= 21:
             act = input('Please choose action: ')
             if act == 'D' or act == 'd':
                 req = blackjack_pb2.Action(
                     action_num=Action.DRAW,
-                    p_idx=0
+                    p_idx=p_idx
                 )
                 response = stub.SendAction(req)
-
                 card = Card.from_grpc(response)
+
                 print('\tYou got card', card)
                 print(colored(f'\tTotal point is {cal_points(stub, p_idx)}', 'green'))
-                print('-' * 20)
+                print('=' * 20)
             elif act == 'S' or act == 's':
                 req = blackjack_pb2.Action(
                     action_num=Action.STAND,
-                    p_idx=0
+                    p_idx=p_idx
                 )
                 response = stub.SendAction(req)
-                print('f', Card.from_grpc(response))
+                card = Card.from_grpc(response)
                 break
-
-        total = stub.CalPoint(
-            blackjack_pb2.pIdx(p_idx=0)
+        
+        # Game End
+        if get_status(stub, p_idx) != Status.END:
+            print('Wait the game end')
+        while get_status(stub, p_idx) != Status.END:
+            time.sleep(1)
+        total = stub.CheckStatus(
+            blackjack_pb2.pIdx(p_idx=p_idx)
         )
         points, status = total.points, total.status_num
-        print('-' * 10, points, status, '-' * 10)
+        print('=' * 10, 'You got', points, 'status:', status, '=' * 10)
 
 if __name__ == "__main__":
-    run()
+    run(int(sys.argv[1]))
