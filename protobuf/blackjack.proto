@@ -6,6 +6,7 @@ service BlackJackService {
     // In Game
     rpc SendAction(Action) returns (Card);
     rpc CheckStatus(pIdx) returns (Status);
+    rpc GetHistory(pIdx) returns (stream Card);
 }
 
 // message Empty { }

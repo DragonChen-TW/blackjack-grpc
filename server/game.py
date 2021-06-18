@@ -22,8 +22,27 @@ class Game:
 
     def game_end(self):
         print(f'{dash} Game is end {dash}')
+        winner = -1
+        tie = []
+
+        points = [self.cal_point(i) for i in range(self.n_players)]
         for i in range(self.n_players):
-            print(f'Player {i} got {self.cal_point(i)} points')
+            p = points[i]
+            print(f'Player {i} got {p} points')
+            if p > 0 and p <= 21:
+                if winner == -1:
+                    winner = i
+                elif p > points[winner]:
+                    winner = i
+                    tie = []
+                elif p == points[winner]:
+                    tie.append(i)
+        
+        if not tie:
+            print(f'Winner is Player {winner}')
+        else:
+            print(' and '.join(['Player {t}' for t in tie]), end='')
+            print(' Tie')
 
     def draw_one_card(self, p_idx):
         card = self.cards.pop()

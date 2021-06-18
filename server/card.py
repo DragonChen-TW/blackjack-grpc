@@ -4,9 +4,11 @@ class Card:
     def __init__(self, flow, p):
         self.flow = flow
         self.point = p
+        points = [None, 'A', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K']
+        self.str_p = points[p]
     
     def __repr__(self):
-        return f'C({self.flow} {self.point})'
+        return f'C({self.flow} {self.str_p})'
     
     @classmethod
     def from_grpc(cls, response):

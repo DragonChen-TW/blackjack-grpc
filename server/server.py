@@ -42,6 +42,13 @@ class BlackJackService(blackjack_pb2_grpc.BlackJackService):
             else:
                 status = Status.BOOM
         return blackjack_pb2.Status(points=points, status_num=status)
+    
+    def GetHistory(self, request, context):
+        p_idx = request.p_idx
+
+        history = self.game.player_cards[p_idx]
+        for c in history:
+            yield blackjack_pb2.Card(flow=c.flow, point=c.point)
 
 def serve():
     # using ThreadPool to build server

@@ -8,36 +8,7 @@ import blackjack_pb2
 import blackjack_pb2_grpc
 # 
 from card import Card
-from const import Action, Status
-
-def test():
-    with grpc.insecure_channel('127.0.0.1:30051') as channel:
-        stub = blackjack_pb2_grpc.BlackJackServiceStub(channel)
-        
-        for _ in range(2):
-            req = blackjack_pb2.Action(
-                action_num=Action.DRAW,
-                p_idx=0
-            )
-            response = stub.SendAction(req)
-
-            card = Card.from_grpc(response)
-            print('card', card)
-    
-        req = blackjack_pb2.Action(
-            action_num=Action.STAND,
-            p_idx=0
-        )
-        response = stub.SendAction(req)
-        print('f', Card.from_grpc(response))
-
-        total = stub.CheckStatus(
-            blackjack_pb2.pIdx(p_idx=0)
-        )
-        print('success')
-        points, status = total.points, total.status_num
-        print('=' * 10, points, status, '=' * 10)
-
+from const import Action, Status    
 
 def cal_points(stub, p_idx):
     res = stub.CheckStatus(blackjack_pb2.pIdx(p_idx=p_idx))
@@ -47,6 +18,16 @@ def get_status(stub, p_idx):
     res = stub.CheckStatus(blackjack_pb2.pIdx(p_idx=p_idx))
     # print('s', res.status_num)
     return res.status_num
+
+def print_history(stub, p_idx):
+    hist = stub.GetHistory(blackjack_pb2.pIdx(p_idx=p_idx))
+    cards = [Card.from_grpc(h) for h in hist]
+    
+    print('-' * 20)
+    # print(' '.join(['{:>2}'.format(c.flow) for c in cards]))
+    # print(' '.join(['{:2}'.format(c.point) for c in cards]))
+    print(' '.join([str(c) for c in cards]))
+    print('-' * 20)
 
 def run(p_idx=None):
     with grpc.insecure_channel('127.0.0.1:30051') as channel:
@@ -68,7 +49,7 @@ def run(p_idx=None):
             time.sleep(1)
 
         # Your turn
-        while cal_points(stub, p_idx) <= 21:
+        while get_status(stub, p_idx) == Status.OKAY and cal_points(stub, p_idx) <= 21:
             act = input('Please choose action: ')
             if act == 'D' or act == 'd':
                 req = blackjack_pb2.Action(
@@ -79,6 +60,7 @@ def run(p_idx=None):
                 card = Card.from_grpc(response)
 
                 print('\tYou got card', card)
+                print_history(stub, p_idx)
                 print(colored(f'\tTotal point is {cal_points(stub, p_idx)}', 'green'))
                 print('=' * 20)
             elif act == 'S' or act == 's':
