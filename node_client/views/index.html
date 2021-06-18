@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>gRPC Node Client</title>
+</head>
+<body>
+    <h2>BlackJack - gRPC</h2>
+
+    <p>
+        <div id='cards' style='height: 120px;'>
+            No Cards
+        </div>
+    </p>
+
+    <div>Total Point: <span id='point'>0</span> points</div>
+    <div>Status: <span id='status'>None</span></div>
+
+    <div>
+        <button id='draw'>Draw</button>
+        <button id='stand'>Stand</button>
+    </div>
+
+    <script>
+        const send_action = async action_num => {
+            await fetch(`/send?action_num=${action_num}`, {method: 'POST'});
+            check();
+        }
+        const check = () => {
+            fetch('/check', {method: 'POST'})
+            .then(res => res.json())
+            .then(data => {
+                console.log('check', data);
+                $('#point').html(data.points);
+                $('#status').html(data.status_num);
+            });
+            renderCards();
+        }
+        const renderCards = async () => {
+            var cards = [];
+            await fetch('/history', {method: 'POST'})
+            .then(res => res.json())
+            .then(data => {
+                cards = data;
+            });
+            console.log('cards', cards);
+
+            var str = '';
+            for (const c of cards) {
+                str += `<img src='http://localhost:3000/cards/${c.point}${c.flow}.svg' height=120 />`;
+            }
+
+            if (!str) str = 'No Cards';
+            $('#cards').html(str);
+        }
+        $('#draw').click(() => send_action('DRAW'));
+        $('#stand').click(() => send_action('STAND'));
+    </script>
+</body>
+</html>

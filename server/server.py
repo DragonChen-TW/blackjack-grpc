@@ -18,11 +18,13 @@ class BlackJackService(blackjack_pb2_grpc.BlackJackService):
         print('send action')
         p_idx = request.p_idx
 
+        print('act', request.action_num)
+
         # sample one card out
-        if request.action_num == Action.DRAW:
+        if request.action_num == Action.DRAW and self.game.cal_point(p_idx) <= 21:
             card = self.game.draw_one_card(p_idx)
         else:
-            print(f'Player {p_idx} draw')
+            print(f'Player {p_idx} stand')
             card = Card('N', 0)
             self.game.next_player()
 

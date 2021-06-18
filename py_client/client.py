@@ -56,6 +56,7 @@ def run(p_idx=None):
                     action_num=Action.DRAW,
                     p_idx=p_idx
                 )
+                print(req.)
                 response = stub.SendAction(req)
                 card = Card.from_grpc(response)
 

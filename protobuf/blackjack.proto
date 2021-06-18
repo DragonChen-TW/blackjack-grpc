@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 // python3 -m grpc_tools.protoc -I ../protobuf --python_out=. --grpc_python_out=. blackjack.proto
+// protoc -I ../protobuf --js_out=import_style=commonjs,binary:./src/ --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./src blackjack.proto
 
 service BlackJackService {
     // In Game
